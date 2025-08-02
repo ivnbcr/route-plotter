@@ -1,0 +1,273 @@
+.container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: #f5f5f5;
+  font-family: Arial, sans-serif;
+}
+
+.sidebar {
+  width: 320px;
+  min-width: 320px;
+  background-color: white;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+  padding: 20px;
+  overflow-y: auto;
+  border-right: 1px solid #ddd;
+  height: 100vh;
+  position: relative;
+  z-index: 1000;
+}
+
+.backButton {
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.header {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.distanceCard {
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #e3f2fd;
+  border-radius: 8px;
+  border: 1px solid #bbdefb;
+}
+
+.distanceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.distanceLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}
+
+.distanceValue {
+  font-size: 28px;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.distanceSubtext {
+  font-size: 14px;
+  color: #666;
+}
+
+.inputSection {
+  margin-bottom: 24px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.button {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: background-color 0.2s;
+}
+
+.saveButton {
+  background-color: #4caf50;
+  color: white;
+}
+
+.saveButton:hover {
+  background-color: #3d8b40;
+}
+
+.exportButton {
+  background-color: #9c27b0;
+  color: white;
+}
+
+.exportButton:hover {
+  background-color: #7b1fa2;
+}
+
+/* Action Buttons */
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.actionButton {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionButton:hover:not(:disabled) {
+  background-color: #e9ecef;
+}
+
+.actionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.undoButton {
+  color: #1976d2;
+}
+
+.undoButton:hover:not(:disabled) {
+  border-color: #1976d2;
+}
+
+.redoButton {
+  color: #4caf50;
+}
+
+.redoButton:hover:not(:disabled) {
+  border-color: #4caf50;
+}
+
+.clearButton {
+  color: #f44336;
+}
+
+.clearButton:hover:not(:disabled) {
+  border-color: #f44336;
+}
+
+.waypointCount {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.mapContainer {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background: #e0e0e0;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+.instructions {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  max-width: 300px;
+  z-index: 1000;
+}
+
+.instructionsTitle {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.instructionsList {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+  padding-left: 16px;
+  margin: 0;
+}
+
+/* Leaflet overrides */
+:global(.leaflet-container) {
+  background: #e0e0e0 !important;
+}
+
+:global(.leaflet-control-attribution) {
+  background: rgba(255, 255, 255, 0.7) !important;
+  font-size: 11px;
+}
+
+.searchSection {
+  margin: 16px 0;
+}
+
+.searchInputContainer {
+  display: flex;
+  gap: 4px;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.searchButton {
+  padding: 8px 12px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.searchButton:disabled {
+  background-color: #e2e8f0;
+  cursor: not-allowed;
+}
