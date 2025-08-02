@@ -1,0 +1,42 @@
+# macOS
+.DS_Store
+
+# Environment files
+.env
+.env.*
+
+# Node (frontend)
+/frontend/node_modules
+/frontend/build
+/frontend/.pnp
+/frontend/coverage
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local
+
+# PHP/Laravel (backend)
+/backend/vendor
+/backend/storage
+/backend/.phpunit.result.cache
+/backend/.phpunit.cache
+/backend/.vscode
+/backend/.idea
+/backend/.env
+/backend/.env.*
+/backend/public/storage
+/backend/public/build
+/backend/public/hot
+/backend/public/storage
+/backend/storage/*.key
+/backend/storage/logs
+/backend/storage/framework
+
+# Composer
+/backend/composer.lock
+
+# Misc
+Thumbs.db
