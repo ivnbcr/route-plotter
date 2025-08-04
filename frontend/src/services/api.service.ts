@@ -5,7 +5,14 @@ import axios, {
   AxiosError,
   type InternalAxiosRequestConfig
 } from 'axios';
-import type { AuthenticatedUser, LoginCredentials, LoginResponse, NewRouteParams, SavedRoute, UpdateRouteParams } from '../types';
+import type {
+  AuthenticatedUser,
+  LoginCredentials,
+  LoginResponse,
+  NewRouteParams,
+  SavedRoute,
+  UpdateRouteParams
+} from '../types';
 
 interface CustomRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
@@ -17,18 +24,21 @@ const api: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
-  timeout: 10000
+  timeout: 10000,
+  withCredentials: true // Required for Sanctum + CORS credentials
 });
 
+// Request interceptor
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     const userJson = sessionStorage.getItem('user');
     if (userJson) {
-      const user: AuthenticatedUser = JSON.parse(userJson); // Use AuthenticatedUser type here
+      const user: AuthenticatedUser = JSON.parse(userJson);
       if (user.token) {
         config.headers.Authorization = `Bearer ${user.token}`;
       }
     }
+
     return config;
   },
   (error: AxiosError): Promise<AxiosError> => {
@@ -36,38 +46,46 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor with TypeScript typing
+// Response interceptor
 api.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response: AxiosResponse) => {
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as CustomRequestConfig;
-    
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
-        // Add token refresh logic here if needed
         sessionStorage.removeItem('user');
         window.location.href = '/login';
       } catch (refreshError) {
         return Promise.reject(refreshError);
       }
     }
-    
+
+    if (error.code === 'ERR_NETWORK' || error.message.includes('CORS')) {
+      console.error('CORS error occurred:', error);
+    }
+
     return Promise.reject(error);
   }
 );
 
-// Typed API methods
+// API Service Methods
 export const ApiService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL);
-    const response = await api.post<LoginResponse>('/login', credentials);
+    const response = await api.post<LoginResponse>('/auth/login', credentials);
     return response.data;
   },
 
   async getRoutes(): Promise<SavedRoute[]> {
     const response = await api.get<SavedRoute[]>('/routes');
+    return response.data;
+  },
+  async getRouteById(id: string): Promise<SavedRoute> {
+    const response = await api.get<SavedRoute>(`/routes/${id}`);
     return response.data;
   },
 
@@ -81,8 +99,19 @@ export const ApiService = {
     return response.data;
   },
 
-  async deleteRoute(id: string): Promise<void> {
+  async deleteRoute(id: number): Promise<void> {
     await api.delete(`/routes/${id}`);
+  },
+
+  // Optional health check for CORS preflight
+  async checkApiHealth(): Promise<boolean> {
+    try {
+      await api.options('/');
+      return true;
+    } catch (error) {
+      console.error('API health check failed:', error);
+      return false;
+    }
   }
 };
 

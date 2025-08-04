@@ -1,3 +1,4 @@
+/* Base Container Styles */
 .container {
   display: flex;
   height: 100vh;
@@ -8,6 +9,7 @@
   overflow: hidden;
 }
 
+/* Sidebar Styles */
 .sidebar {
   width: 320px;
   min-width: 320px;
@@ -47,6 +49,7 @@
   gap: 0.5rem;
 }
 
+/* Distance Card Styles */
 .distanceCard {
   margin-bottom: 1.5rem;
   padding: 1rem;
@@ -79,6 +82,7 @@
   color: var(--dark-text-secondary);
 }
 
+/* Input Section Styles */
 .inputSection {
   margin-bottom: 1.5rem;
 }
@@ -131,6 +135,11 @@
   background-color: #0ea371;
 }
 
+.saveButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .exportButton {
   background-color: var(--dark-primary);
   color: white;
@@ -140,6 +149,12 @@
   background-color: var(--dark-primary-hover);
 }
 
+.exportButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Action Buttons */
 .actionButtons {
   display: flex;
   gap: 0.5rem;
@@ -180,6 +195,7 @@
   color: var(--dark-danger);
 }
 
+/* Search Section */
 .searchSection {
   margin: 1rem 0;
 }
@@ -218,16 +234,18 @@
   transition: background-color 0.2s;
 }
 
-.searchButton:hover,
-.userLocationButton:hover {
+.searchButton:hover:not(:disabled),
+.userLocationButton:hover:not(:disabled) {
   background-color: var(--dark-primary-hover);
 }
 
-.searchButton:disabled {
-  background-color: var(--dark-surface);
+.searchButton:disabled,
+.userLocationButton:disabled {
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
+/* Map Container */
 .mapContainer {
   flex: 1;
   position: relative;
@@ -241,6 +259,7 @@
   height: 100%;
 }
 
+/* Instructions */
 .instructions {
   position: absolute;
   top: 1rem;
@@ -322,7 +341,108 @@
   margin: 0 auto;
 }
 
+/* Privacy Toggle */
+.privacyToggle {
+  margin: 0.75rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--dark-text-secondary);
+}
+
+.toggleInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleSlider {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 22px;
+  background-color: var(--dark-card);
+  border: 1px solid var(--dark-border);
+  border-radius: 11px;
+  margin-right: 8px;
+  transition: all 0.2s;
+}
+
+.toggleSlider:before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  left: 3px;
+  top: 2px;
+  background-color: var(--dark-text-secondary);
+  transition: all 0.2s;
+}
+
+.toggleInput:checked + .toggleSlider {
+  background-color: var(--dark-primary);
+  border-color: var(--dark-primary);
+}
+
+.toggleInput:checked + .toggleSlider:before {
+  transform: translateX(18px);
+  background-color: white;
+}
+
+.toggleText {
+  font-size: 0.875rem;
+  color: var(--dark-text);
+}
+
+/* Error Alert Styles */
+.errorAlert {
+  background-color: var(--dark-danger);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.errorText {
+  flex: 1;
+  margin-right: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.errorCloseButton {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  transition: opacity 0.2s;
+}
+
+.errorCloseButton:hover {
+  opacity: 0.8;
+}
+
+/* Animations */
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\API\RouteController;
 
 Route::get('/welcome', function () {
     return response()->json([
@@ -12,3 +13,7 @@ Route::get('/welcome', function () {
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', RegisterController::class);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('routes', RouteController::class);
+});

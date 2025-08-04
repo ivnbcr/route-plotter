@@ -2,74 +2,117 @@
   padding: 1.5rem;
   max-width: 800px;
   margin: 0 auto;
-  background-color: var(--dark-bg);
-  min-height: 100vh;
 }
 
 .header {
   margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--dark-text);
+  margin: 0;
 }
 
 .emptyState {
-  color: var(--dark-text-secondary);
+  color: #9ca3af;
   text-align: center;
   padding: 2rem;
-  background-color: var(--dark-card);
-  border-radius: 8px;
-  border: 1px solid var(--dark-border);
-  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
 .routeList {
   list-style: none;
   padding: 0;
   margin: 0 0 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .listItem {
+  padding: 0;
+}
+
+.routeCard {
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  background: #1f2937;
+  color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background-color: var(--dark-card);
-  border-radius: 8px;
-  border: 1px solid var(--dark-border);
-  margin-bottom: 0.75rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.listItem:hover {
+.routeCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  background-color: #2a2a2a;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
-.routeInfo {
-  flex: 1;
+.routeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  position: relative;
 }
 
 .routeName {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.1rem;
-  color: var(--dark-text);
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding-right: 6rem; /* Reserve space for badge */
 }
 
 .routeMeta {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
-  color: var(--dark-text-secondary);
+  color: #9ca3af;
   font-size: 0.9rem;
+  align-items: center;
+}
+
+.publicBadge,
+.privateBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.publicBadge {
+  background: #10b981;
+  color: white;
+}
+
+.privateBadge {
+  background: #ef4444;
+  color: white;
+}
+
+.routeActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .editButton {
   padding: 0.5rem 1rem;
-  background: var(--dark-primary);
+  background: #3b82f6;
   color: white;
   border: none;
   border-radius: 4px;
@@ -77,39 +120,114 @@
   transition: background-color 0.2s;
 }
 
-.editButton:hover {
-  background: var(--dark-primary-hover);
+.editButton:hover:not(:disabled) {
+  background: #2563eb;
 }
 
-.newRouteButton {
-  width: 100%;
+.editButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.deleteButton {
+  padding: 0.5rem 1rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.deleteButton:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.deleteButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.refreshButton {
+  padding: 0.5rem 1rem;
+  background: #e5e7eb;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #111827;
+  transition: background-color 0.2s;
+}
+
+.refreshButton:hover:not(:disabled) {
+  background: #d1d5db;
+}
+
+.refreshButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.createButton {
   padding: 0.75rem;
-  background: var(--dark-primary);
+  background: #3b82f6;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.2s;
+  margin-top: 1rem;
 }
 
-.newRouteButton:hover {
-  background: var(--dark-primary-hover);
+.createButton:hover:not(:disabled) {
+  background: #2563eb;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .container {
-    padding: 1rem;
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.loadingSpinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #3b82f6;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.errorContainer {
+  padding: 1.5rem;
+  background: #fee2e2;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  color: #b91c1c;
+}
+
+.errorAlert {
+  text-align: center;
+}
+
+.retryButton {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
   }
-  
-  .listItem {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-  
-  .editButton {
-    width: 100%;
+  100% {
+    transform: rotate(360deg);
   }
 }

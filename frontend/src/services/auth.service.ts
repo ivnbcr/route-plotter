@@ -3,7 +3,7 @@ import { api } from './api.service';
 
 export const AuthService = {
   async login(credentials: { email: string; password: string }): Promise<LoginResponse> {
-    const response = await api.post<LoginResponse>('/api/login', credentials);
+    const response = await api.post<LoginResponse>('/login', credentials);
     return response.data;
   },
 
@@ -18,7 +18,7 @@ export const AuthService = {
     password: string;
     password_confirmation: string;
   }): Promise<LoginResponse> {
-    const response = await api.post<LoginResponse>('/api/register', userData);
+    const response = await api.post<LoginResponse>('/register', userData);
     return response.data;
   }
 };

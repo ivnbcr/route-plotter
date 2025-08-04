@@ -18,8 +18,10 @@ export type Waypoint = LatLng & {
  * Complete route definition
  */
 export type SavedRoute = {
-  id: string;                     // Unique identifier (required for routing)
+  id: number;                     // Unique identifier (required for routing)
+  user_id: number;                // Owner's user ID
   name: string;                   // Human-readable name
+  is_private: boolean;             // Privacy flag (changed from optional to required)
   waypoints: Waypoint[];          // Array of waypoints
   total_distance: number;         // Calculated distance in kilometers
   created_at: string;             // ISO 8601 creation timestamp
@@ -29,7 +31,7 @@ export type SavedRoute = {
 /**
  * Lightweight route representation for lists
  */
-export type RouteSummary = Pick<SavedRoute, 'id' | 'name' | 'total_distance'> & {
+export type RouteSummary = Pick<SavedRoute, 'id' | 'name' | 'total_distance' | 'is_private'> & {
   created_date: string;         // Formatted date only (e.g. "2023-08-15")
   waypoint_count: number;       // Number of waypoints
 };

@@ -2,28 +2,15 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { MapPin, Trash2, Save, Download, Undo, Redo, Search, Locate } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import { MapClickHandler } from '../MapClickHandler';
-import styles from './RouteEditor.module.css';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ApiService } from '../../services/api.service';
 import { useWaypoints } from '../../hooks/useWaypoints';
 import { calculateRouteDistance } from '../../utils/geo';
-import { useParams, useNavigate } from 'react-router-dom';
 import type { SavedRoute } from '../../types';
+import styles from './RouteEditor.module.css';
 import 'leaflet/dist/leaflet.css';
 
-type RouteEditorProps = {
-  routes: SavedRoute[];
-  onSave: (route: SavedRoute) => void;
-  onBack: () => void;
-  onSearch?: (query: string) => Promise<boolean>;
-  mode?: 'create' | 'edit';
-};
-
-export const RouteEditor = ({ 
-  routes,
-  onSave,
-  onBack,
-  onSearch,
-  mode = 'create'
-}: RouteEditorProps) => {
+export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' }) => {
   const DEFAULT_CENTER: [number, number] = [14.5995, 120.9842];
   const { id } = useParams();
   const navigate = useNavigate();
@@ -31,12 +18,15 @@ export const RouteEditor = ({
   
   // State Management
   const [routeName, setRouteName] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [locationPrompt, setLocationPrompt] = useState(false);
   const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Custom Hooks
+  // Waypoints Management
   const { 
     waypoints, 
     addWaypoint, 
@@ -50,52 +40,75 @@ export const RouteEditor = ({
 
   // Load route when editing
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      
-      if (mode === 'edit' && id) {
-        const route = routes.find(r => r.id === id);
-        if (route) {
-          setRouteName(route.name);
-          resetWaypoints(route.waypoints);
-          if (route.waypoints.length > 0) {
-            setMapCenter([route.waypoints[0].lat, route.waypoints[0].lng]);
-          }
-        }
-      } else {
-        resetWaypoints([]);
-        setRouteName('');
-        setMapCenter(DEFAULT_CENTER);
-      }
-      setSearchQuery('');
-    }
-  }, [id, mode, routes, resetWaypoints, setMapCenter]);
+    loadRoute();
+  }, [id, mode]);
 
-  // Handlers
+  const loadRoute = async () => {
+    if (mode === 'edit' && id) {
+      try {
+        const route = await ApiService.getRouteById(id);
+        setRouteName(route.name);
+        setIsPrivate(route.is_private);
+        resetWaypoints(route.waypoints);
+        if (route.waypoints.length > 0) {
+          setMapCenter([route.waypoints[0].lat, route.waypoints[0].lng]);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load route');
+        navigate('/');
+      }
+    } else {
+      resetWaypoints([]);
+      setRouteName('');
+      setIsPrivate(false);
+      setMapCenter(DEFAULT_CENTER);
+    }
+  };
+
+  // Save route handler with API call
+  const handleSave = useCallback(async () => {
+    if (!routeName.trim() || waypoints.length === 0) {
+      setError('Route name and at least one waypoint are required');
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+    
+    try {
+      const routeData = {
+        name: routeName,
+        waypoints,
+        is_private: isPrivate,
+        total_distance: calculateRouteDistance(waypoints),
+        created_at: mode === 'create' ? new Date().toISOString() : undefined,
+        updated_at: new Date().toISOString()
+      };
+      if (mode === 'edit' && id) {
+        await ApiService.updateRoute(id, routeData);
+      } else {
+        await ApiService.createRoute(routeData);
+      }
+      navigate('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save route');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [routeName, waypoints, isPrivate, mode, id, navigate]);
+
+  // Map click handler
   const handleMapClick = useCallback((e: { latlng: { lat: number; lng: number } }) => {
     addWaypoint({ lat: e.latlng.lat, lng: e.latlng.lng });
   }, [addWaypoint]);
 
-  const handleSave = useCallback(() => {
-    if (!routeName.trim() || waypoints.length === 0) return;
-    
-    onSave({
-      id: id || Date.now().toString(),
-      name: routeName,
-      waypoints,
-      total_distance: calculateRouteDistance(waypoints),
-      created_at: mode === 'create' ? new Date().toISOString() : routes.find(r => r.id === id)?.created_at || new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    });
-    navigate('/');
-  }, [routeName, waypoints, id, mode, routes, onSave, navigate]);
-
+  // Location search handler
   const handleSearch = useCallback(async (e?: React.FormEvent) => {
     e?.preventDefault();
-    
     if (!searchQuery.trim() || isSearching) return;
 
     setIsSearching(true);
+    setError(null);
     
     try {
       const response = await fetch(
@@ -107,53 +120,52 @@ export const RouteEditor = ({
       const data = await response.json();
       
       if (data?.length > 0) {
-        resetWaypoints([]);
         setMapCenter([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
         setSearchQuery('');
       } else {
-        alert('Location not found');
-        if (onSearch) await onSearch(searchQuery);
+        setError('Location not found');
       }
-    } catch (error) {
-      console.error('Search error:', error);
-      alert('Error searching location');
+    } catch (err) {
+      console.error('Search error:', err);
+      setError('Error searching location');
     } finally {
       setIsSearching(false);
     }
-  }, [searchQuery, isSearching, resetWaypoints, setMapCenter, onSearch]);
+  }, [searchQuery, isSearching]);
 
+  // Current location handler
   const handleUseLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
+      setError('Geolocation is not supported by your browser');
       return;
     }
 
     setLocationPrompt(true);
-
+    setError(null);
+    
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        resetWaypoints([]);
         setMapCenter([pos.coords.latitude, pos.coords.longitude]);
         setLocationPrompt(false);
       },
       (error) => {
         console.error('Geolocation error:', error);
         setLocationPrompt(false);
-        alert('Unable to retrieve your location.');
+        setError('Unable to retrieve your location');
       }
     );
-  }, [setMapCenter]);
+  }, []);
 
   // Derived values
   const totalDistance = calculateRouteDistance(waypoints);
-  const isSaveDisabled = !routeName.trim() || waypoints.length === 0;
-  const isExportDisabled = waypoints.length === 0;
-  const waypointCount = waypoints.length;
+  const isSaveDisabled = !routeName.trim() || waypoints.length === 0 || isSaving;
 
   return (
     <div className={styles.container}>
       {/* Sidebar Section */}
       <div className={styles.sidebar}>
-        <button onClick={() => {navigate(`/`); }} className={styles.backButton}>
+        <button onClick={() => navigate('/')} className={styles.backButton}>
           ← Back to Routes
         </button>
 
@@ -161,6 +173,19 @@ export const RouteEditor = ({
           <MapPin size={24} />
           <span>{mode === 'create' ? 'Create Route' : 'Edit Route'}</span>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className={styles.errorAlert}>
+            <div className={styles.errorText}>{error}</div>
+            <button 
+              onClick={() => setError(null)}
+              className={styles.errorCloseButton}
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         {/* Distance Card */}
         <div className={styles.distanceCard}>
@@ -184,13 +209,31 @@ export const RouteEditor = ({
             onChange={(e) => setRouteName(e.target.value)}
             className={styles.input}
           />
+          
+          {/* Privacy Toggle */}
+          <div className={styles.privacyToggle}>
+            <label className={styles.toggleLabel}>
+              <input
+                type="checkbox"
+                checked={isPrivate}
+                onChange={() => setIsPrivate(!isPrivate)}
+                className={styles.toggleInput}
+              />
+              <span className={styles.toggleSlider}></span>
+              <span className={styles.toggleText}>
+                {isPrivate ? 'Private Route' : 'Public Route'}
+              </span>
+            </label>
+          </div>
+          
           <div className={styles.buttonContainer}>
             <button
               className={`${styles.button} ${styles.saveButton}`}
               onClick={handleSave}
               disabled={isSaveDisabled}
             >
-              <Save size={16} /> {mode === 'create' ? 'Create' : 'Update'}
+              <Save size={16} /> 
+              {isSaving ? 'Saving...' : mode === 'create' ? 'Create' : 'Update'}
             </button>
             <button
               className={`${styles.button} ${styles.exportButton}`}
@@ -198,12 +241,18 @@ export const RouteEditor = ({
                 const routeData = {
                   name: routeName || 'Unnamed Route',
                   waypoints,
+                  isPrivate,
                   total_distance: totalDistance,
                   created_at: new Date().toISOString()
                 };
-                exportToJsonFile(routeData, `route_${Date.now()}.json`);
+                const blob = new Blob([JSON.stringify(routeData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `route_${Date.now()}.json`;
+                a.click();
               }}
-              disabled={isExportDisabled}
+              disabled={waypoints.length === 0}
             >
               <Download size={16} /> Export
             </button>
@@ -215,7 +264,7 @@ export const RouteEditor = ({
           <button
             className={`${styles.actionButton} ${styles.undoButton}`}
             onClick={undo}
-            disabled={!canUndo}
+            disabled={!canUndo || isSaving}
             title="Undo last action"
           >
             <Undo size={16} />
@@ -223,7 +272,7 @@ export const RouteEditor = ({
           <button
             className={`${styles.actionButton} ${styles.redoButton}`}
             onClick={redo}
-            disabled={!canRedo}
+            disabled={!canRedo || isSaving}
             title="Redo last action"
           >
             <Redo size={16} />
@@ -231,7 +280,7 @@ export const RouteEditor = ({
           <button
             className={`${styles.actionButton} ${styles.clearButton}`}
             onClick={clearWaypoints}
-            disabled={waypoints.length === 0}
+            disabled={waypoints.length === 0 || isSaving}
             title="Clear all waypoints"
           >
             <Trash2 size={16} />
@@ -248,12 +297,12 @@ export const RouteEditor = ({
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               className={styles.searchInput}
-              disabled={isSearching}
+              disabled={isSearching || isSaving}
             />
             <button
               onClick={handleSearch}
               className={styles.searchButton}
-              disabled={isSearching || !searchQuery.trim()}
+              disabled={isSearching || !searchQuery.trim() || isSaving}
               title="Search location"
             >
               <Search size={16} />
@@ -262,6 +311,7 @@ export const RouteEditor = ({
             <button
               onClick={handleUseLocation}
               className={styles.userLocationButton}
+              disabled={isSaving}
               title="Use User location"
             >
               <Locate size={16} />
@@ -315,14 +365,4 @@ export const RouteEditor = ({
       </div>
     </div>
   );
-};
-
-// Helper function
-const exportToJsonFile = (data: object, filename: string) => {
-  const dataStr = JSON.stringify(data, null, 2);
-  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-  const linkElement = document.createElement('a');
-  linkElement.setAttribute('href', dataUri);
-  linkElement.setAttribute('download', filename);
-  linkElement.click();
 };

@@ -47,7 +47,7 @@ function MapClickHandler({ onMapClick }: MapClickHandlerProps) {
   return null;
 }
 
-const RoutePlannerApp = () => {
+const RoutePlotterApp = () => {
   const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_CENTER);
   const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
   const [totalDistance, setTotalDistance] = useState<number>(0);
@@ -589,4 +589,4 @@ const RoutePlannerApp = () => {
   );
 };
 
-export default RoutePlannerApp;
+export default RoutePlotterApp;
