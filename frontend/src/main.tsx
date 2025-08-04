@@ -42,6 +42,13 @@ const router = createBrowserRouter([
             <RouteEditor mode="edit" />
           </ProtectedRoute>
         ),
+      },{
+        path: 'routes/:id/view',
+        element: (
+          <ProtectedRoute>
+            <RouteEditor mode="view" />
+          </ProtectedRoute>
+        ),
       },
       {
         path: 'register',

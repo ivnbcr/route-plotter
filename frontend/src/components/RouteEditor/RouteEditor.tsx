@@ -6,15 +6,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ApiService } from '../../services/api.service';
 import { useWaypoints } from '../../hooks/useWaypoints';
 import { calculateRouteDistance } from '../../utils/geo';
-import type { SavedRoute } from '../../types';
 import styles from './RouteEditor.module.css';
 import 'leaflet/dist/leaflet.css';
 
-export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' }) => {
+export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' | 'view' }) => {
   const DEFAULT_CENTER: [number, number] = [14.5995, 120.9842];
   const { id } = useParams();
   const navigate = useNavigate();
-  const isInitialMount = useRef(true);
   
   // State Management
   const [routeName, setRouteName] = useState('');
@@ -44,7 +42,7 @@ export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' }) =
   }, [id, mode]);
 
   const loadRoute = async () => {
-    if (mode === 'edit' && id) {
+    if (mode !== 'create' && id) {
       try {
         const route = await ApiService.getRouteById(id);
         setRouteName(route.name);
@@ -84,7 +82,8 @@ export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' }) =
         created_at: mode === 'create' ? new Date().toISOString() : undefined,
         updated_at: new Date().toISOString()
       };
-      if (mode === 'edit' && id) {
+      if (mode !== 'create' && id) {
+        console.log('Updating route:', id, routeData);
         await ApiService.updateRoute(id, routeData);
       } else {
         await ApiService.createRoute(routeData);
@@ -99,6 +98,7 @@ export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' }) =
 
   // Map click handler
   const handleMapClick = useCallback((e: { latlng: { lat: number; lng: number } }) => {
+    if (mode === 'view') return; // Prevent adding waypoints in view mode
     addWaypoint({ lat: e.latlng.lat, lng: e.latlng.lng });
   }, [addWaypoint]);
 
@@ -171,7 +171,7 @@ export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' }) =
 
         <div className={styles.header}>
           <MapPin size={24} />
-          <span>{mode === 'create' ? 'Create Route' : 'Edit Route'}</span>
+          <span>{(mode === 'create' ? 'Create' : mode === 'edit' ? 'Edit' : 'View') + ' Route'}</span>
         </div>
 
         {/* Error Display */}
@@ -202,39 +202,47 @@ export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' }) =
 
         {/* Route Name Input */}
         <div className={styles.inputSection}>
-          <input
-            type="text"
-            placeholder="Route name"
-            value={routeName}
-            onChange={(e) => setRouteName(e.target.value)}
-            className={styles.input}
-          />
+          {mode === 'view' ? (
+            <span className={styles.routeNameDisplay}>{routeName || 'Untitled Route'}</span>
+          ) : (
+            <input
+              type="text"
+              placeholder="Route name"
+              value={routeName}
+              onChange={(e) => setRouteName(e.target.value)}
+              className={styles.input}
+            />
+          )}
           
           {/* Privacy Toggle */}
-          <div className={styles.privacyToggle}>
-            <label className={styles.toggleLabel}>
-              <input
-                type="checkbox"
-                checked={isPrivate}
-                onChange={() => setIsPrivate(!isPrivate)}
-                className={styles.toggleInput}
-              />
-              <span className={styles.toggleSlider}></span>
-              <span className={styles.toggleText}>
-                {isPrivate ? 'Private Route' : 'Public Route'}
-              </span>
-            </label>
-          </div>
+          {mode !== 'view' && (
+            <div className={styles.privacyToggle}>
+              <label className={styles.toggleLabel}>
+                <input
+                  type="checkbox"
+                  checked={isPrivate}
+                  onChange={() => setIsPrivate(!isPrivate)}
+                  className={styles.toggleInput}
+                />
+                <span className={styles.toggleSlider}></span>
+                <span className={styles.toggleText}>
+                  {isPrivate ? 'Private Route' : 'Public Route'}
+                </span>
+              </label>
+            </div>
+          )}
           
           <div className={styles.buttonContainer}>
-            <button
-              className={`${styles.button} ${styles.saveButton}`}
-              onClick={handleSave}
-              disabled={isSaveDisabled}
-            >
-              <Save size={16} /> 
-              {isSaving ? 'Saving...' : mode === 'create' ? 'Create' : 'Update'}
-            </button>
+            {mode !== 'view' && (
+              <button
+                className={`${styles.button} ${styles.saveButton}`}
+                onClick={handleSave}
+                disabled={isSaveDisabled}
+              >
+                <Save size={16} /> 
+                {isSaving ? 'Saving...' : mode === 'create' ? 'Create' : 'Update'}
+              </button>
+            )}
             <button
               className={`${styles.button} ${styles.exportButton}`}
               onClick={() => {
@@ -259,35 +267,40 @@ export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' }) =
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className={styles.actionButtons}>
-          <button
-            className={`${styles.actionButton} ${styles.undoButton}`}
-            onClick={undo}
-            disabled={!canUndo || isSaving}
-            title="Undo last action"
-          >
-            <Undo size={16} />
-          </button>
-          <button
-            className={`${styles.actionButton} ${styles.redoButton}`}
-            onClick={redo}
-            disabled={!canRedo || isSaving}
-            title="Redo last action"
-          >
-            <Redo size={16} />
-          </button>
-          <button
-            className={`${styles.actionButton} ${styles.clearButton}`}
-            onClick={clearWaypoints}
-            disabled={waypoints.length === 0 || isSaving}
-            title="Clear all waypoints"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
 
-        {/* Search Section */}
+        {/* Action Buttons */}
+        {mode !== 'view' && (
+          <div className={styles.actionButtons}>
+            <button
+              className={`${styles.actionButton} ${styles.undoButton}`}
+              onClick={undo}
+              disabled={!canUndo || isSaving}
+              title="Undo last action"
+            >
+              <Undo size={16} />
+            </button>
+            <button
+              className={`${styles.actionButton} ${styles.redoButton}`}
+              onClick={redo}
+              disabled={!canRedo || isSaving}
+              title="Redo last action"
+            >
+              <Redo size={16} />
+            </button>
+            <button
+              className={`${styles.actionButton} ${styles.clearButton}`}
+              onClick={clearWaypoints}
+              disabled={waypoints.length === 0 || isSaving}
+              title="Clear all waypoints"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        )}
+
+
+       {/* Search Section */}
+      {mode !== 'view' && (
         <div className={styles.searchSection}>
           <div className={styles.searchInputContainer}>
             <input
@@ -307,7 +320,6 @@ export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' }) =
             >
               <Search size={16} />
             </button>
-
             <button
               onClick={handleUseLocation}
               className={styles.userLocationButton}
@@ -318,7 +330,9 @@ export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' }) =
             </button>
           </div>
         </div>
-      </div>
+      )}
+    </div>
+      
 
       {/* Map Section */}
       <div className={styles.mapContainer}>
