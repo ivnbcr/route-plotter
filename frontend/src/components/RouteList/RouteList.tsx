@@ -3,13 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { ApiService } from '../../services/api.service';
 import type { SavedRoute } from '../../types';
 import styles from './RouteList.module.css';
-import { useAuth } from '../../context/authcontext';
+import { useAuth } from '../../context/AuthContext';
 import { RouteRow } from './RouteRow';
+import { SortControls, type SortKey } from './SortControls';
 
 export const RouteList = () => {
   const [routes, setRoutes] = useState<SavedRoute[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [primarySort, setPrimarySort] = useState<SortKey>('created_at');
+  const [primaryOrder, setPrimaryOrder] = useState<'asc' | 'desc'>('asc');
+  const [secondarySort, setSecondarySort] = useState<SortKey>('');
+  const [secondaryOrder, setSecondaryOrder] = useState<'asc' | 'desc'>('asc');
+  
+
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -17,7 +24,12 @@ export const RouteList = () => {
     const fetchRoutes = async () => {
       try {
         setIsLoading(true);
-        const data = await ApiService.getRoutes();
+        const data = await ApiService.getRoutes({
+          sort_key: primarySort,
+          sort_order: primaryOrder,
+          secondary_sort_key: secondarySort || undefined,
+          secondary_sort_order: secondarySort ? secondaryOrder : undefined,
+        });
         setRoutes(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load routes');
@@ -28,7 +40,7 @@ export const RouteList = () => {
     };
 
     fetchRoutes();
-  }, []);
+  }, [primarySort, primaryOrder, secondarySort, secondaryOrder]);
 
   const handleNewRoute = () => {
     navigate('/routes/new');
@@ -95,6 +107,19 @@ export const RouteList = () => {
           {isLoading ? 'Refreshing...' : 'Refresh'}
         </button>
       </header>
+
+      {/* Sort Controls */}
+      <SortControls
+        primarySort={primarySort}
+        primaryOrder={primaryOrder}
+        secondarySort={secondarySort}
+        secondaryOrder={secondaryOrder}
+        onPrimarySortChange={setPrimarySort}
+        onPrimaryOrderChange={setPrimaryOrder}
+        onSecondarySortChange={setSecondarySort}
+        onSecondaryOrderChange={setSecondaryOrder}
+      />
+
 
       {routes.length === 0 ? (
         <div className={styles.emptyState}>

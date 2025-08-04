@@ -80,10 +80,23 @@ export const ApiService = {
     return response.data;
   },
 
-  async getRoutes(): Promise<SavedRoute[]> {
-    const response = await api.get<SavedRoute[]>('/routes');
+  async getRoutes(params?: {
+    sort_key?: string;
+    sort_order?: 'asc' | 'desc';
+    secondary_sort_key?: string;
+    secondary_sort_order?: 'asc' | 'desc';
+  }): Promise<SavedRoute[]> {
+    const query = new URLSearchParams();
+
+    if (params?.sort_key) query.append('sort_key', params.sort_key);
+    if (params?.sort_order) query.append('sort_order', params.sort_order);
+    if (params?.secondary_sort_key) query.append('secondary_sort_key', params.secondary_sort_key);
+    if (params?.secondary_sort_order) query.append('secondary_sort_order', params.secondary_sort_order);
+    console.log('Fetching routes with params:', query.toString());
+    const response = await api.get<SavedRoute[]>(`/routes?${query.toString()}`);
     return response.data;
   },
+
   async getRouteById(id: string): Promise<SavedRoute> {
     const response = await api.get<SavedRoute>(`/routes/${id}`);
     return response.data;

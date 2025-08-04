@@ -6,16 +6,28 @@ use App\Http\Controllers\Controller;
 use App\Models\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class RouteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-         return Route::with('waypoints')
-            ->where('user_id', Auth::id())
-            ->orWhere('is_private', false)
-            ->get()
+        $primarySort = $request->query('sort_key', 'created_at');
+        $primaryOrder = $request->query('sort_order', 'asc');
+        $secondarySort = $request->query('secondary_sort_key');
+        $secondaryOrder = $request->query('secondary_sort_order', 'asc');
+
+        $query = Route::with('waypoints')
+            ->where(function ($query) {
+                $query->where('user_id', Auth::id())
+                    ->orWhere('is_private', false);
+            })
+            ->orderBy($primarySort, $primaryOrder);
+
+        if ($secondarySort) {
+            $query->orderBy($secondarySort, $secondaryOrder);
+        }
+
+        return $query->get()
             ->filter(fn($route) => Auth::user()->can('view', $route))
             ->values();
     }
