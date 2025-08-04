@@ -92,7 +92,6 @@ export const ApiService = {
     if (params?.sort_order) query.append('sort_order', params.sort_order);
     if (params?.secondary_sort_key) query.append('secondary_sort_key', params.secondary_sort_key);
     if (params?.secondary_sort_order) query.append('secondary_sort_order', params.secondary_sort_order);
-    console.log('Fetching routes with params:', query.toString());
     const response = await api.get<SavedRoute[]>(`/routes?${query.toString()}`);
     return response.data;
   },
