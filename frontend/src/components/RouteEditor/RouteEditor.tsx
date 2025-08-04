@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MapPin, Trash2, Save, Download, Undo, Redo, Search, Locate } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import { MapClickHandler } from '../MapClickHandler';
@@ -75,6 +75,7 @@ export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' | 'v
     
     try {
       const routeData = {
+        id: mode === 'create' ? undefined : id,
         name: routeName,
         waypoints,
         is_private: isPrivate,

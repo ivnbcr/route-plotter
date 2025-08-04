@@ -101,12 +101,12 @@ export const ApiService = {
     return response.data;
   },
 
-  async createRoute(route: NewRouteParams): Promise<SavedRoute> {
+  async createRoute(route: Partial<NewRouteParams>): Promise<SavedRoute> {
     const response = await api.post<SavedRoute>('/routes', route);
     return response.data;
   },
 
-  async updateRoute(id: string, updates: UpdateRouteParams): Promise<SavedRoute> {
+  async updateRoute(id: string, updates: Partial<NewRouteParams>): Promise<SavedRoute> {
     const response = await api.put<SavedRoute>(`/routes/${id}`, updates);
     return response.data;
   },
