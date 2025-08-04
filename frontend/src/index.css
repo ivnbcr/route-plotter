@@ -115,3 +115,31 @@ button:focus-visible {
     background: #c1c1c1;
   }
 }
+
+.Toastify__toast-container {
+  width: auto;
+  max-width: 400px;
+}
+
+.Toastify__toast {
+  background: var(--dark-card);
+  color: var(--dark-text);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.Toastify__toast-body {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+.Toastify__progress-bar {
+  background: var(--dark-primary);
+}
+
+.Toastify__close-button {
+  color: var(--dark-text-secondary);
+}
+
+.Toastify__toast-container {
+  z-index: 9999 !important;
+}

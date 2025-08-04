@@ -45,3 +45,54 @@ export type NewRouteParams = Omit<SavedRoute, 'id' | 'created_at' | 'updated_at'
 export type UpdateRouteParams = Partial<NewRouteParams> & {
   id: string;                  // Required for updates
 };
+
+/**
+ * API Response Types
+ */
+export interface ApiError {
+  message: string;
+  statusCode?: number;
+  errors?: Record<string, string[]>;
+}
+
+export interface ApiResponse<T> {
+  data: T;
+  status: number;
+  statusText: string;
+}
+
+/**
+ * Authentication Types
+ */
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  email_verified_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user: User;
+}
+
+export type AuthenticatedUser = User & {
+  token: string;
+};
+
+/**
+ * Editor Component Props
+ */
+export interface RouteEditorProps {
+  mode: 'create' | 'edit';
+  route?: SavedRoute;
+  onSave: (route: SavedRoute) => void;
+  onCancel: () => void;
+}
