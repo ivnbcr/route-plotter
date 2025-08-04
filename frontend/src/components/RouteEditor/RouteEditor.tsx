@@ -336,7 +336,7 @@ export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' | 'v
       
 
       {/* Map Section */}
-      <div className={styles.mapContainer}>
+      <div className={styles.mapContainer} data-testid="map-container">
         <MapContainer
           center={mapCenter}
           zoom={12}
