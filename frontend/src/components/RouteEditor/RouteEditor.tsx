@@ -84,7 +84,6 @@ export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' | 'v
         updated_at: new Date().toISOString()
       };
       if (mode !== 'create' && id) {
-        console.log('Updating route:', id, routeData);
         await ApiService.updateRoute(id, routeData);
       } else {
         await ApiService.createRoute(routeData);
@@ -122,6 +121,7 @@ export const RouteEditor = ({ mode = 'create' }: { mode?: 'create' | 'edit' | 'v
       
       if (data?.length > 0) {
         setMapCenter([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
+        resetWaypoints([]);
         setSearchQuery('');
       } else {
         setError('Location not found');

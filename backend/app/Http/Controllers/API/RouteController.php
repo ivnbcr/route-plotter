@@ -20,8 +20,15 @@ class RouteController extends Controller
             ->where(function ($query) {
                 $query->where('user_id', Auth::id())
                     ->orWhere('is_private', false);
-            })
-            ->orderBy($primarySort, $primaryOrder);
+            });
+
+        // Apply primary sort
+        if ($primarySort === 'created_at' && $secondarySort) {
+            // Use DATE(created_at) if secondary sort is present
+            $query->orderByRaw("DATE(created_at) {$primaryOrder}");
+        } else {
+            $query->orderBy($primarySort, $primaryOrder);
+        }
 
         if ($secondarySort) {
             $query->orderBy($secondarySort, $secondaryOrder);
