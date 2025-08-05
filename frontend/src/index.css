@@ -1,11 +1,24 @@
 :root {
+  /* Dark theme color palette */
+  --dark-bg: #121212;
+  --dark-surface: #1e1e1e;
+  --dark-card: #242424;
+  --dark-primary: #3b82f6;
+  --dark-primary-hover: #2563eb;
+  --dark-text: rgba(255, 255, 255, 0.87);
+  --dark-text-secondary: rgba(255, 255, 255, 0.6);
+  --dark-border: #2d2d2d;
+  --dark-success: #10b981;
+  --dark-danger: #ef4444;
+  --dark-warning: #f59e0b;
+
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--dark-text);
+  background-color: var(--dark-bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,28 +26,31 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* === Layout Structure === */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+/* === Typography === */
+a {
+  font-weight: 500;
+  color: var(--dark-primary);
+  text-decoration: inherit;
+  transition: color 0.2s;
+}
+a:hover {
+  color: var(--dark-primary-hover);
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  margin: 0;
 }
 
+/* === Buttons === */
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -42,27 +58,88 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--dark-card);
+  color: var(--dark-text);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--dark-primary);
+  background-color: var(--dark-surface);
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 4px auto var(--dark-primary);
 }
 
+/* === Scrollbars === */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--dark-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* === Light Mode Overrides === */
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    --dark-bg: #ffffff;
+    --dark-surface: #f5f5f5;
+    --dark-card: #ffffff;
+    --dark-text: #213547;
+    --dark-text-secondary: #5a5a5a;
+    --dark-border: #e0e0e0;
   }
+  
   a:hover {
     color: #747bff;
   }
+  
   button {
     background-color: #f9f9f9;
+    color: #213547;
   }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+  }
+}
+
+.Toastify__toast-container {
+  width: auto;
+  max-width: 400px;
+}
+
+.Toastify__toast {
+  background: var(--dark-card);
+  color: var(--dark-text);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.Toastify__toast-body {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+.Toastify__progress-bar {
+  background: var(--dark-primary);
+}
+
+.Toastify__close-button {
+  color: var(--dark-text-secondary);
+}
+
+.Toastify__toast-container {
+  z-index: 9999 !important;
 }
